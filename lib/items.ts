@@ -46,7 +46,8 @@ export function getRandomItem(deck: Item[], played: Item[]): Item {
   }
 
 //    const logBase = 10;
-  const logBase = parseInt(getURLParameter('logBase')) || 2;
+  const urlParam = parseFloat(getURLParameter('logBase'));
+  const logBase = isNaN(urlParam) || urlParam <= 1 ? 2 : urlParam;
   console.log('log base is', logBase)
 
     const itemsWithLogWeights = availableItems.map(item => ({
