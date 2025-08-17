@@ -1,33 +1,11 @@
 import { Item, PlayedItem } from "../types/item";
 import { createWikimediaImage } from "./image";
 
-// export function getRandomItem(deck: Item[], played: Item[]): Item {
-//   const periods: [number, number][] = [
-//     [-100000, 1000],
-//     [1000, 1800],
-//     [1800, 2020],
-//   ];
-//   const [fromYear, toYear] =
-//     periods[Math.floor(Math.random() * periods.length)];
-//   const avoidPeople = Math.random() > 0.5;
-//   const candidates = deck.filter((candidate) => {
-//     if (avoidPeople && candidate.instance_of.includes("human")) {
-//       return false;
-//     }
-//     if (candidate.year < fromYear || candidate.year > toYear) {
-//       return false;
-//     }
-//     if (tooClose(candidate, played)) {
-//       return false;
-//     }
-//     return true;
-//   });
-//
-//   if (candidates.length > 0) {
-//     return candidates[Math.floor(Math.random() * candidates.length)];
-//   }
-//   return deck[Math.floor(Math.random() * deck.length)];
-// }
+function getURLParameter(paramName: string): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(paramName);
+}
+
 
 export function getRandomItem(deck: Item[], played: Item[]): Item {
   // Create a set of played item IDs for efficient lookup
@@ -67,20 +45,32 @@ export function getRandomItem(deck: Item[], played: Item[]): Item {
      return deck[Math.floor(Math.random() * deck.length)];
   }
 
-  // Calculate total weight (sum of all page_views)
-  const totalWeight = availableItems.reduce((sum, item) => sum + item.page_views, 0);
+//    const logBase = 10;
+  const logBase = parseInt(getURLParameter('logBase')) || 2;
+  console.log('log base is', logBase)
 
-  // Generate random number between 0 and totalWeight
-  const randomWeight = Math.random() * totalWeight;
+    const itemsWithLogWeights = availableItems.map(item => ({
+      item,
+      logWeight: Math.log(item.page_views + 1) / Math.log(logBase)
+    }));
 
-  // Find the item that corresponds to this weight
-  let currentWeight = 0;
-  for (const item of availableItems) {
-    currentWeight += item.page_views;
-    if (randomWeight <= currentWeight) {
-      return item;
+    // Calculate total weight (sum of all log-transformed weights)
+    const totalWeight = itemsWithLogWeights.reduce((sum, { logWeight }) => sum + logWeight, 0);
+
+    // Generate random number between 0 and totalWeight
+    const randomWeight = Math.random() * totalWeight;
+
+    // Find the item that corresponds to this weight
+    let currentWeight = 0;
+    for (const { item, logWeight } of itemsWithLogWeights) {
+      currentWeight += logWeight;
+      if (randomWeight <= currentWeight) {
+      console.log('found item', item, item.page_views, logWeight);
+        return item;
+      }
     }
-  }
+
+console.log('fallback')
 
   // Fallback (should never reach here, but TypeScript requires it)
   return availableItems[availableItems.length - 1];
