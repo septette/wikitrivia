@@ -3,7 +3,8 @@ import { createWikimediaImage } from "./image";
 
 function getURLParameter(paramName: string): string {
   const params = new URLSearchParams(window.location.search);
-  if (params.get(paramName)) { return params.get(paramName); }
+  const val = params.get(paramName);
+  if (val) { return val; }
   return "2"
 }
 
