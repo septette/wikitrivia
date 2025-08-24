@@ -1,9 +1,10 @@
 import { Item, PlayedItem } from "../types/item";
 import { createWikimediaImage } from "./image";
 
-function getURLParameter(paramName: string): string | null {
+function getURLParameter(paramName: string): string {
   const params = new URLSearchParams(window.location.search);
-  return params.get(paramName);
+  if (params.get(paramName)) { return params.get(paramName); }
+  return "2"
 }
 
 
